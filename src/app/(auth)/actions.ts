@@ -52,9 +52,30 @@ export type ResetPasswordState = {
  * hands us `next` on the query string; without this check a crafted `?next=` could
  * turn a login into an open redirect.
  */
+/**
+ * Only ever redirect to a path on this site.
+ *
+ * "starts with / and not //" is the check everybody writes, and it is not enough.
+ * Browsers follow the WHATWG URL parser, which treats a backslash in the authority
+ * position exactly like a forward slash, so /\\evil.com resolves to https://evil.com.
+ * A phishing link on the real domain, over real TLS, handed to someone right after a
+ * genuine login. Parsers also strip control characters before resolving, so a value
+ * carrying one can mean something different by the time the browser reads it.
+ */
 function safeNext(value: FormDataEntryValue | null): string {
-  if (typeof value !== 'string' || value.length === 0) return '/dashboard'
-  if (!value.startsWith('/') || value.startsWith('//')) return '/dashboard'
+  const fallback = '/dashboard'
+  if (typeof value !== 'string' || value.length === 0) return fallback
+
+  // control characters, tabs and newlines: removed by parsers, so refused here
+  if (/[\u0000-\u001F\u007F]/.test(value)) return fallback
+
+  // must be a path, and the second character may not open an authority
+  if (value[0] !== '/') return fallback
+  if (value[1] === '/' || value[1] === '\\') return fallback
+
+  // and no backslash anywhere: it is never legitimate in a path this app generates
+  if (value.includes('\\')) return fallback
+
   return value
 }
 

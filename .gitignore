@@ -46,3 +46,6 @@ next-env.d.ts
 .vercel
 supabase/.temp/
 supabase/.branches/
+
+# .env* acima cobre .env.example por acidente, e ele precisa estar no repositorio
+!.env.example

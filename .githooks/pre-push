@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# The check docs/TDD.md section 5 describes. It exists because the claim was written
+# before the mechanism was, and a security review caught the gap.
+#
+# It already had something to catch: `supabase link` writes supabase/.temp/pooler-url,
+# which is the connection string with the database password inside, and `git add -A`
+# staged it for a public repository.
+#
+# Install once: git config core.hooksPath .githooks
+set -euo pipefail
+
+falhou=0
+aviso() { echo "pre-push: $1" >&2; falhou=1; }
+
+arquivos=$(git ls-files)
+
+# 1. Key material in anything tracked.
+padroes='sb_secret_[A-Za-z0-9_-]|service_role|postgresql://postgres|eyJhbGciOiJIUzI1NiIs'
+if achado=$(printf '%s\n' "$arquivos" | xargs grep -nIE "$padroes" 2>/dev/null | grep -v '^\.githooks/pre-push:' | grep -v '^docs/' || true); [ -n "$achado" ]; then
+  aviso "key material in a tracked file:"; printf '%s\n' "$achado" >&2
+fi
+
+# 2. A password sitting literally in a script, which AC5 names as a credential.
+if achado=$(printf '%s\n' "$arquivos" | grep -E '^scripts/' | xargs grep -nIE "(PASSWORD|password)\s*[:=]\s*['\"][^'\"]{6,}" 2>/dev/null || true); [ -n "$achado" ]; then
+  aviso "a literal password inside scripts/:"; printf '%s\n' "$achado" >&2
+fi
+
+# 3. An elevated variable named anywhere the browser can reach.
+if achado=$(printf '%s\n' "$arquivos" | grep -E '^src/' | xargs grep -nE 'SUPABASE_SECRET_KEY|SUPABASE_DB_PASSWORD|SERVICE_ROLE' 2>/dev/null || true); [ -n "$achado" ]; then
+  aviso "an elevated variable named under src/, where no code may hold one:"; printf '%s\n' "$achado" >&2
+fi
+
+# 4. An env file that should never be tracked.
+if achado=$(printf '%s\n' "$arquivos" | grep -E '^\.env($|\.local|\.production)' || true); [ -n "$achado" ]; then
+  aviso "an env file is tracked: $achado"
+fi
+
+if [ "$falhou" -ne 0 ]; then
+  echo "pre-push: refusing to push. AC5 says no secrets in the repository." >&2
+  exit 1
+fi
+echo "pre-push: no key material in tracked files"

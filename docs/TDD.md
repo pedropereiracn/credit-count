@@ -73,7 +73,7 @@ Counting credits means reading `rides`, which only its owner may read. Three fun
 
 Two values reach the browser by design: the project URL, an address rather than a secret, and the publishable key. Everything else stays in one untracked `.env.local` and never reaches Vercel or the repository: the secret key (seeding demo accounts locally), the connection string (the SQL audit), and the delivered account passwords, which AC5 names as credentials and the gate therefore reads from the environment.
 
-The claim an approver can check in seconds: **the Vercel project has exactly two environment variables, and both begin with `NEXT_PUBLIC_`.** No runtime code holds a privilege the browser lacks, so a Server Action bug leaks nothing. A pre-push grep blocks key material in tracked files and elevated variables named under `app/` or `lib/`.
+The claim an approver can check in seconds: **the Vercel project has exactly two environment variables, and both begin with `NEXT_PUBLIC_`.** No runtime code holds a privilege the browser lacks, so a Server Action bug leaks nothing. A pre-push hook in `.githooks/` blocks key material in tracked files, a literal password inside `scripts/`, and any elevated variable named under `src/`.
 
 ## 6. The verification gate
 

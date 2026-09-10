@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Credit Count
 
-## Getting Started
+A credit tracker for the rollercoaster enthusiast community. Log the coasters you have
+ridden, watch your credits and stats grow, and appear on the public leaderboard only if
+you choose to.
 
-First, run the development server:
+Built for the Koin Limited AI Product Engineer task, against the accompanying Statement
+of Work. In this community a **credit** is a unique rollercoaster you have ridden at
+least once: riding it again adds to your ride count, never to your credit count.
+
+**Live:** https://credit-count-psi.vercel.app
+
+## The one decision that shapes everything
+
+The SOW says four times that privacy must hold **against direct API calls**, not only in
+the interface. The browser carries a publishable key by design, so anyone can query
+PostgREST directly.
+
+So the interface is a convenience and the database is the control. Every access rule is
+a grant or a policy in Postgres, and the delivery includes a script that performs the
+attack the acceptance criteria describe and fails the build if any defence gives way.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+node scripts/verify-security.mjs     # 37 checks, exits non-zero on any failure
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documents
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| | |
+|---|---|
+| [docs/TDD.md](docs/TDD.md) | the technical design document, written before the code |
+| [docs/WORKING-LOG.md](docs/WORKING-LOG.md) | how the work was directed and reviewed, mistakes included |
+| [AGENTS.md](AGENTS.md) | which agent owns which files, and why that prevents collisions |
+| [CLAUDE.md](CLAUDE.md) | the rules no agent may break |
+| [docs/reviews/](docs/reviews/) | the adversarial reviews, and what they found |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Running it
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local        # fill in from the Supabase dashboard
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Only two variables reach the browser, and both begin with `NEXT_PUBLIC_`. Everything
+else stays in `.env.local` and never reaches Vercel or this repository.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git config core.hooksPath .githooks   # refuses a push carrying key material
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Database
 
-## Deploy on Vercel
+Migrations are files, never dashboard edits, so the schema lives in the repository.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+supabase db push                                   # schema, policies, functions, seed
+psql "$DATABASE_URL" -f supabase/audit/checks.sql  # what no client can see
+node scripts/seed-demo.mjs                         # demo accounts, so the board is not empty
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Layer | Where |
+|---|---|
+| Tables, constraints, indexes | `supabase/migrations/*_schema.sql` |
+| RLS, grants, policies | `supabase/migrations/*_security.sql` |
+| The three elevated functions | `supabase/migrations/*_functions.sql` |
+| The five statistic views | `supabase/migrations/*_views.sql` |
+| 46 real coasters | `supabase/migrations/*_seed.sql` |
+
+## Stack
+
+Next.js 16 on Vercel, Supabase for auth, Postgres and every access rule, Tailwind and
+shadcn/ui, free tier throughout.
