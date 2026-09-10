@@ -33,6 +33,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // signed-in visitor an account they already have.
   const supabaseAuth = await createClient()
   const { data: { user } } = await supabaseAuth.auth.getUser()
+
+  // Who the viewer is, to tint their own row. Both reads are the viewer's own,
+  // scoped by RLS: their profile (name, and whether they even appear) and their
+  // credit total. If they have not opted in, there is no row to mark, so `you`
+  // stays null. This never touches the public leaderboard function.
+  let you: { name: string; credits: number } | null = null
+  if (user) {
+    const [{ data: profile }, { data: totals }] = await Promise.all([
+      supabaseAuth.from('profiles').select('display_name, show_on_leaderboard').eq('id', user.id).single(),
+      supabaseAuth.from('my_totals').select('credits').single(),
+    ])
+    if (profile?.show_on_leaderboard && profile.display_name) {
+      you = { name: profile.display_name, credits: totals?.credits ?? 0 }
+    }
+  }
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
 
   return (
@@ -54,7 +69,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
         <div className="mt-8">
           <Suspense fallback={<RowsSkeleton rows={10} />}>
-            <LeaderboardSection page={page} />
+            <LeaderboardSection page={page} you={you} />
           </Suspense>
         </div>
       </section>
@@ -64,7 +79,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   )
 }
 
-async function LeaderboardSection({ page }: { page: number }) {
+async function LeaderboardSection({
+  page,
+  you,
+}: {
+  page: number
+  you: { name: string; credits: number } | null
+}) {
   const offset = (page - 1) * PAGE_SIZE
 
   // The only sanctioned crossing of the `profiles`/`rides` boundary on this page.
@@ -119,7 +140,7 @@ async function LeaderboardSection({ page }: { page: number }) {
 
   return (
     <>
-      <LeaderboardList rows={rows} />
+      <LeaderboardList rows={rows} you={you} />
       <LeaderboardPagination
         page={page}
         hasPrevious={page > 1}

@@ -24,7 +24,7 @@ Six tables, seeded with 52 real coasters across 3 countries, 12 parks, 14 manufa
 
 | Route | Shows | Primary action | When empty |
 |---|---|---|---|
-| `/` | Rank, display name and credits, and nothing else | Sign up | Nobody has opted in |
+| `/` | Rank, display name and credits; the viewer's own row tinted when signed in | Sign up | Nobody has opted in |
 | `/signup`, `/login` | Email and password; sign-up also takes the display name | Create the account, or sign in | |
 | `/forgot-password`, `/reset-password` | Supabase's own recovery flow, nothing built on top (SOW §4.2) | Send the link, then set the password | |
 | `/dashboard` | Credits headline, total rides, four breakdowns, recent rides | Log a ride | What a credit is, focused search, coasters to start |
@@ -66,6 +66,8 @@ Counting credits means reading `rides`, which only its owner may read. Three fun
 - **`leaderboard(limit, offset)`,** callable by `anon` and `authenticated`, **is the one whose return type is the security surface.** It returns exactly `rank`, `display_name` and `credits`, names no person in its parameters, and is the single controlled crossing of the `rides` and `profiles` boundaries: no column in the signature can carry which coasters anyone rode (FR7). It filters on `show_on_leaderboard` per call on a dynamic route, so opting out lands on the next request (FR7's "immediately"). `ride_count` is absent because FR7 says display name and credit count only; `rank` answers SOW §4.1's board ranked by credits.
 - **`handle_new_user()`,** callable by no client, since `EXECUTE` is revoked and PostgREST will not expose a `trigger` function: it writes the profile row no client may insert.
 - **`merge_coasters(uuid,uuid)`,** admin re-checked in the body since a definer bypasses RLS: it re-points another user's rides and returns one integer, the rides moved, an aggregate over the catalogue and never a name.
+
+**Marking your own row** does not change any of this. The public function still returns exactly `rank`, `display_name` and `credits`; the viewer's row is tinted on the server by matching it against the viewer's own name and credit count, data they already hold about themselves. It is an approximation (two opted-in users identical in both would both light up), it leaks nothing, and the exact fix is a function returning the caller's position from `auth.uid()`, left as a v2 move.
 
 **No function takes a `user_id` argument.** Identity comes from `auth.uid()` in the verified JWT, so "give me user X's history" has no signature to call.
 
