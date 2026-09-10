@@ -77,3 +77,16 @@ begin
 
   raise notice 'auditoria SQL: 7 blocos, tudo certo';
 end $$;
+
+-- 8. Limpeza: o portao cria uma conta por execucao e nao consegue apagar sozinho,
+-- porque apagar usuario exige a chave secreta e nenhum codigo de aplicacao pode
+-- carregar uma. Aqui, sim: esta auditoria roda localmente, contra o banco, como dono.
+do $$
+declare removidas int;
+begin
+  delete from auth.users where email like 'gate+%@credit-count.test';
+  get diagnostics removidas = row_count;
+  if removidas > 0 then
+    raise notice 'limpeza: % conta(s) de teste do portao removida(s)', removidas;
+  end if;
+end $$;

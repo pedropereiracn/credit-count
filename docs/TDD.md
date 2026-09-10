@@ -71,7 +71,7 @@ Counting credits means reading `rides`, which only its owner may read. Three fun
 
 ## 5. Secrets (AC5)
 
-Two values reach the browser by design: the project URL, an address rather than a secret, and the publishable key. Two never do: the secret key (local seed only) and the connection string (SQL audit only), both in one `.env.local`, never in Vercel or the repository.
+Two values reach the browser by design: the project URL, an address rather than a secret, and the publishable key. Everything else stays in one untracked `.env.local` and never reaches Vercel or the repository: the secret key (seeding demo accounts locally), the connection string (the SQL audit), and the delivered account passwords, which AC5 names as credentials and the gate therefore reads from the environment.
 
 The claim an approver can check in seconds: **the Vercel project has exactly two environment variables, and both begin with `NEXT_PUBLIC_`.** No runtime code holds a privilege the browser lacks, so a Server Action bug leaks nothing. A pre-push grep blocks key material in tracked files and elevated variables named under `app/` or `lib/`.
 
@@ -87,7 +87,7 @@ AC2 and AC4 describe an attack, so the delivery includes it. `scripts/verify-sec
 6. log three coasters as A, one twice, asserting credits and rides move correctly (AC1)
 7. turn A's leaderboard opt-in off, re-fetch the rendered page signed out and require A's name absent from the HTML, turn it back on (FR7's "immediately", asserted against the page, since caching is what actually breaks it)
 
-Every destructive attempt is followed by A re-reading the row, since PostgREST answers 204 to a DELETE matching nothing. Steps 3, 6 and 7 are positive controls: a gate proving only failures would pass with the API off. It exits non-zero and runs before push, carrying the §2 invariant per account. A SQL audit adds what no client sees: RLS everywhere, no elevated function outside the inventory, no view missing `security_invoker`, and it removes the account each run created.
+Every destructive attempt is followed by A re-reading the row, since PostgREST answers 204 to a DELETE matching nothing. Steps 3, 5, 6 and 7 are positive controls: a gate proving only failures would pass with the API off. It exits non-zero and runs before push, carrying the §2 invariant per account. A SQL audit adds what no client sees: RLS everywhere, no elevated function outside the inventory, no view missing `security_invoker`, and it removes the account each run created.
 
 **Directing the AI.** Claude Code wrote the screens, the seed, this script and the first draft of this document. I read the security surface myself, line by line: the grants, the policies and the three elevated functions, because there a plausible generated line is a breach rather than a bug. The rest of the code I hold to the gate instead of to my own attention, since the gate runs on every push and attention does not.
 

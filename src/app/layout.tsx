@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
-import { Fredoka, Nunito, Geist } from 'next/font/google'
+import { Fredoka, Nunito } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { AppHeader } from '@/components/app-header'
 import './globals.css'
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const fredoka = Fredoka({
   variable: '--font-fredoka',
@@ -30,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en">
       <body className={`${fredoka.variable} ${nunito.variable} min-h-dvh antialiased`}>
         <AppHeader />
         <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6">{children}</main>
