@@ -29,8 +29,8 @@ const need = (k) => {
   return v;
 };
 
-const URL_BASE   = need('SUPABASE_URL').replace(/\/$/, '');
-const PUBKEY     = need('SUPABASE_PUBLISHABLE_KEY');
+const URL_BASE   = need('NEXT_PUBLIC_SUPABASE_URL').replace(/\/$/, '');
+const PUBKEY     = need('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
 const A_EMAIL    = need('TEST_ENTHUSIAST_EMAIL');
 const A_PASSWORD = need('TEST_ENTHUSIAST_PASSWORD');
 const ADMIN_EMAIL    = need('TEST_ADMIN_EMAIL');
@@ -53,7 +53,7 @@ const step = (n, title) => console.log(`\n${n}. ${title}`);
 // ------------------------------------------------------------------- client
 
 async function call(path, { token, method = 'GET', body, prefer, raw } = {}) {
-  const headers = { apikey: ANON, 'Content-Type': 'application/json' };
+  const headers = { apikey: PUBKEY, 'Content-Type': 'application/json' };
   if (token)  headers.Authorization = `Bearer ${token}`;
   if (prefer) headers.Prefer = prefer;
   const res = await fetch(`${URL_BASE}${path}`, {
