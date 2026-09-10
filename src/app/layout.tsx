@@ -28,8 +28,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${fredoka.variable} ${nunito.variable} min-h-dvh antialiased`}>
+    /*
+     * The font variables go on <html>, not <body>. globals.css declares --font-sans on
+     * :root, which is <html>, and custom properties only inherit downwards. With the
+     * variables one level below, var(--font-nunito) was invalid up there, the whole
+     * --font-sans declaration became invalid, and every page fell back to the browser
+     * default serif. Neither the build nor any test catches that. You have to look.
+     */
+    <html lang="en" className={`${fredoka.variable} ${nunito.variable}`}>
+      <body className="min-h-dvh antialiased">
         <AppHeader />
         <main className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6">{children}</main>
         <Toaster position="top-center" />
