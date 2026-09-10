@@ -58,7 +58,7 @@ export function DeleteCoasterButton({ id, name }: { id: string; name: string }) 
           type="button"
           variant="ghost"
           size="sm"
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="min-h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           Delete
         </Button>
@@ -82,8 +82,13 @@ export function DeleteCoasterButton({ id, name }: { id: string; name: string }) 
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep it</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={pending}>
+          <AlertDialogCancel className="min-h-11">Keep it</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            className="min-h-11"
+            onClick={handleDelete}
+            disabled={pending}
+          >
             {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
             Delete
           </AlertDialogAction>

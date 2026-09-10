@@ -15,7 +15,7 @@ export function AboutCredits() {
         <p className="mt-2 text-sm leading-relaxed text-background/75">
           Search the coaster, pick it, confirm. Your credits and rides add up on their own.
         </p>
-        <Button asChild className="mt-4">
+        <Button asChild className="mt-4 min-h-11">
           <Link href="/signup">Start your count</Link>
         </Button>
       </div>

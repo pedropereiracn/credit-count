@@ -69,9 +69,13 @@ function DialogContent({
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
+            {/* min-h-11 min-w-11 (A7, task 1): every dialog in the app closes
+                through this one button, so its 28px default was the single
+                highest-traffic tap target under 44px in the whole build.
+                Presentation only: same icon, same position, bigger box. */}
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              className="absolute top-1.5 right-1.5 min-h-11 min-w-11"
               size="icon-sm"
             >
               <XIcon
@@ -115,7 +119,9 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button variant="outline" className="min-h-11">
+            Close
+          </Button>
         </DialogPrimitive.Close>
       )}
     </div>

@@ -77,12 +77,20 @@ export function LeaderboardToggleCard({
       )}
 
       <div className="mt-4">
-        <Switch
-          checked={visible}
-          onCheckedChange={handleChange}
-          disabled={pending}
-          aria-label="Appear on the public leaderboard"
-        />
+        {/* The switch itself is small by shadcn's design (18x32px, with some
+            built-in hit-area padding via its ::after); a label wrapping it
+            with its own padding brings the tappable region to 44px without
+            touching src/components/ui/switch.tsx (task 1). Clicking a
+            <label> that wraps a labelable control (a switch is a <button>
+            under the hood) activates that control natively, no JS needed. */}
+        <label className="-m-2.5 inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center p-2.5">
+          <Switch
+            checked={visible}
+            onCheckedChange={handleChange}
+            disabled={pending}
+            aria-label="Appear on the public leaderboard"
+          />
+        </label>
       </div>
     </div>
   )

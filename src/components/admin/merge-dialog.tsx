@@ -120,17 +120,29 @@ export function MergeDialog({
             <p>
               Merge <b>{loser.name}</b> into <b>{survivor.name}</b> ({survivor.parkName})?
             </p>
-            <Button type="button" variant="link" size="sm" className="mt-1 h-auto px-0" onClick={() => setSurvivor(null)}>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="-mx-2 mt-1 min-h-11 px-2"
+              onClick={() => setSurvivor(null)}
+            >
               Pick a different coaster
             </Button>
           </div>
         )}
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <Button type="button" variant="outline" className="min-h-11" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button type="button" variant="destructive" disabled={!survivor || pending} onClick={confirmMerge}>
+          <Button
+            type="button"
+            variant="destructive"
+            className="min-h-11"
+            disabled={!survivor || pending}
+            onClick={confirmMerge}
+          >
             {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
             Merge, no undo
           </Button>

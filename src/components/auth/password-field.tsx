@@ -39,7 +39,10 @@ export function PasswordField({
         <Label htmlFor={id}>{label}</Label>
         {labelExtra}
       </div>
-      <InputGroup>
+      {/* h-11: task 1's 44px target. InputGroup itself (src/components/ui/input-group.tsx,
+          frozen) ships h-8, matched by plain Input's own h-8 fixed above via className,
+          so the two field styles stay the same height. */}
+      <InputGroup className="h-11">
         <InputGroupInput
           id={id}
           name={name}
@@ -53,6 +56,8 @@ export function PasswordField({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             type="button"
+            size="icon-sm"
+            className="min-h-11 min-w-11"
             aria-label={visible ? 'Hide password' : 'Show password'}
             aria-pressed={visible}
             onClick={() => setVisible((v) => !v)}

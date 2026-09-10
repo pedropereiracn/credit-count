@@ -51,6 +51,7 @@ export function ParkCombobox({
               type="button"
               variant="ghost"
               size="icon-xs"
+              className="min-h-11 min-w-11"
               onClick={() => {
                 setMode('existing')
                 setQuery('')
@@ -62,6 +63,7 @@ export function ParkCombobox({
           </div>
           <Input
             name="park_new_name"
+            className="h-11"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Park name"
@@ -70,6 +72,7 @@ export function ParkCombobox({
           />
           <Input
             name="park_new_country"
+            className="h-11"
             value={newCountry}
             onChange={(e) => setNewCountry(e.target.value.toUpperCase().slice(0, 2))}
             placeholder="Country code, e.g. GB"
@@ -89,7 +92,7 @@ export function ParkCombobox({
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full justify-between font-normal"
+                className="min-h-11 w-full justify-between font-normal"
               >
                 {selected ? (
                   <span>

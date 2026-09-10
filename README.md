@@ -21,7 +21,8 @@ a grant or a policy in Postgres, and the delivery includes a script that perform
 attack the acceptance criteria describe and fails the build if any defence gives way.
 
 ```bash
-node scripts/verify-security.mjs     # 37 checks, exits non-zero on any failure
+node scripts/verify-security.mjs     # attacks PostgREST directly, exits non-zero on any failure
+node scripts/verify-ui.mjs           # real browser at 390px: fonts, headers, overflow, caching
 ```
 
 ## Documents

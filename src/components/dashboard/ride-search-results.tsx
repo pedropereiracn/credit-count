@@ -51,7 +51,7 @@ export function RideSearchResults({
             <button
               type="button"
               onClick={() => onPick(row)}
-              className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-none"
+              className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:bg-secondary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
               <span className="min-w-0">
                 <span className="block truncate font-heading text-sm font-bold">{row.name}</span>
@@ -76,6 +76,7 @@ export function RideSearchResults({
             type="button"
             variant="ghost"
             size="sm"
+            className="min-h-11"
             disabled={page <= 1 || pending}
             onClick={() => onPageChange(page - 1)}
           >
@@ -86,6 +87,7 @@ export function RideSearchResults({
             type="button"
             variant="ghost"
             size="sm"
+            className="min-h-11"
             disabled={!hasMore || pending}
             onClick={() => onPageChange(page + 1)}
           >

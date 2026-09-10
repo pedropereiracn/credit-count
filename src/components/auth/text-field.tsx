@@ -39,6 +39,7 @@ export function TextField({
         id={id}
         name={name}
         type={type}
+        className="h-11"
         autoComplete={autoComplete}
         placeholder={placeholder}
         defaultValue={defaultValue}

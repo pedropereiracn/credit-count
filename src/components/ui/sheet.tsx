@@ -70,9 +70,12 @@ function SheetContent({
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
+            {/* min-h-11 min-w-11: same reasoning as DialogContent's close
+                button (task 1) — this is the mobile bottom sheet's, and
+                mobile is this agent's whole brief. */}
             <Button
               variant="ghost"
-              className="absolute top-3 right-3"
+              className="absolute top-2 right-2 min-h-11 min-w-11"
               size="icon-sm"
             >
               <XIcon

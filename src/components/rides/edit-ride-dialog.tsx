@@ -66,7 +66,11 @@ export function EditRideDialog({ ride }: { ride: RideDetail }) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="ghost" size="sm" className="h-auto px-0 font-bold">
+        {/* min-h-11 -mx-2: task 1's 44px tap target, without the button's own
+            padding pushing "Edit"/"Delete" further apart than the prototype's
+            tight, text-like pair. The negative margin folds the extra hit
+            area back so neighbouring text still lines up visually. */}
+        <Button type="button" variant="ghost" size="sm" className="-mx-2 min-h-11 px-2 font-bold">
           Edit
         </Button>
       </DialogTrigger>
@@ -96,6 +100,7 @@ export function EditRideDialog({ ride }: { ride: RideDetail }) {
               id={`ridden-on-${ride.id}`}
               name="riddenOn"
               type="date"
+              className="h-11"
               defaultValue={ride.ridden_on}
               max={todayIso()}
               required
@@ -116,11 +121,11 @@ export function EditRideDialog({ ride }: { ride: RideDetail }) {
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" className="min-h-11">
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending} className="min-h-11">
               {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
               Save ride
             </Button>

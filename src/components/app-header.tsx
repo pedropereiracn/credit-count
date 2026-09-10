@@ -58,10 +58,10 @@ export async function AppHeader() {
             </>
           ) : (
             <>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="min-h-11">
                 <Link href="/login">Log in</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="min-h-11">
                 <Link href="/signup">Sign up</Link>
               </Button>
             </>
@@ -85,7 +85,11 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="rounded-lg px-3 py-2 text-sm font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      // min-h-11: task 1's 44px tap target. flex/items-center centers the
+      // (shorter) text inside that taller box instead of just padding it,
+      // and focus-visible:ring makes Tab landing here visible (task 4):
+      // a plain next/link carries no focus style of its own, unlike Button.
+      className="inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-bold text-muted-foreground outline-none transition-colors hover:bg-secondary hover:text-foreground focus-visible:bg-secondary focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       {children}
     </Link>

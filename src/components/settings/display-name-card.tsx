@@ -52,6 +52,7 @@ export function DisplayNameCard({ initialName }: { initialName: string }) {
           <Input
             id="displayName"
             name="displayName"
+            className="h-11"
             autoComplete="nickname"
             defaultValue={state.value}
             required
@@ -60,7 +61,7 @@ export function DisplayNameCard({ initialName }: { initialName: string }) {
           <p className="text-xs font-medium text-muted-foreground">2 to 40 characters.</p>
         </div>
 
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="min-h-11">
           {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
           Save
         </Button>

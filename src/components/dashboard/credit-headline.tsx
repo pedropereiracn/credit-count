@@ -12,10 +12,16 @@ export function CreditHeadline({ credits, rides }: { credits: number; rides: num
         Your credit count
       </p>
       <div className="mt-1 flex flex-wrap items-baseline gap-3">
-        <span className="credit-number text-[clamp(4.5rem,16vw,9rem)] text-primary">
+        {/* The prototype's number sits at 112px on a phone and 208px on desktop
+            (its own clamp, in container units). This one was pinned to a 4.5rem
+            floor and never got past 9rem, so on a phone the number people came
+            here to see read smaller than the "Log a ride" card beside it. Raised
+            to match: the credit count is the one thing this screen should not
+            let you miss (task 7). */}
+        <span className="credit-number text-[clamp(7rem,20vw,12.5rem)] text-primary">
           {credits}
         </span>
-        <span className="font-heading text-2xl font-bold sm:text-3xl">
+        <span className="font-heading text-3xl font-bold sm:text-4xl">
           {credits === 1 ? 'credit' : 'credits'}
         </span>
       </div>

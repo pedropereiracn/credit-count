@@ -134,9 +134,35 @@ const patchRole = await rest(`/profiles?id=eq.${B.id}`, {
 const patchMixed = await rest(`/profiles?id=eq.${B.id}`, {
   token: B.token, method: 'PATCH', body: { display_name: 'Gate B2', role: 'admin' },
 });
+
+// Prefer: return=representation is a different code path: PostgREST reads the row
+// back inside the same statement. A column grant violation has to block that read
+// too, or the write only looks silent while actually going through under this header.
+const patchRepr = await rest(`/profiles?id=eq.${B.id}`, {
+  token: B.token, method: 'PATCH', prefer: 'return=representation', body: { role: 'admin' },
+});
+(patchRepr.status === 401 || patchRepr.status === 403)
+  ? ok(`PATCH role with Prefer: return=representation rejected (${patchRepr.status})`)
+  : fail('PATCH with return=representation let the write through', patchRepr.data);
+
+// An upsert-as-POST is a second, separate code path into the same column:
+// PostgREST turns on_conflict into INSERT ... ON CONFLICT DO UPDATE, checked
+// against the INSERT grant and policy rather than the UPDATE one that denies
+// role above. profiles has no INSERT grant at all for authenticated (TDD 3), so
+// this should die even earlier than the PATCH does.
+const upsertRole = await rest(`/profiles?on_conflict=id`, {
+  token: B.token, method: 'POST',
+  prefer: 'resolution=merge-duplicates,return=representation',
+  body: { id: B.id, display_name: 'Gate B Upsert', role: 'admin', show_on_leaderboard: false },
+});
+(upsertRole.status === 401 || upsertRole.status === 403)
+  ? ok(`upsert POST with on_conflict=id rejected (${upsertRole.status})`)
+  : fail('an upsert POST promoted the account to admin', upsertRole.data);
+
 const afterPatch = await rest(`/profiles?id=eq.${B.id}&select=role`, { token: B.token });
 afterPatch.data?.[0]?.role === 'enthusiast'
-  ? ok(`direct PATCH of role rejected (${patchRole.status}, mixed ${patchMixed.status}), still enthusiast`)
+  ? ok(`direct PATCH of role rejected (${patchRole.status}, mixed ${patchMixed.status}, ` +
+       `representation ${patchRepr.status}, upsert ${upsertRole.status}), still enthusiast`)
   : fail('a direct PATCH promoted the account to admin', afterPatch.data);
 
 // ---------------------------------------------------------------------------
@@ -197,12 +223,31 @@ seen === bOwn
   ? ok(`my_totals shows B ${seen} rides, exactly what B owns (views are scoped to the caller)`)
   : fail(`a statistic view served B ${seen} rides while B owns ${bOwn}: security_invoker is missing somewhere`, bTotals.data);
 
-for (const v of ['my_credits_by_country', 'my_credits_by_manufacturer', 'my_credits_by_type', 'my_most_ridden']) {
-  const r = await rest(`/${v}?select=*`, { token: B.token });
-  (Array.isArray(r.data) && (bOwn > 0 || r.data.length === 0))
-    ? ok(`${v} is scoped to B`)
-    : fail(`${v} leaked rows to a user with ${bOwn} rides`, r.data);
+// Compared against what B actually owns, not merely "an array came back": the old
+// check, `bOwn > 0 || r.data.length === 0`, was true by construction whenever B had
+// any rides at all, whatever those rows actually contained. B is freshly created and
+// owns zero rides today, so the old line only ever passed for the wrong reason.
+const bCredits = bTotals.data?.[0]?.credits;
+for (const v of ['my_credits_by_country', 'my_credits_by_manufacturer', 'my_credits_by_type']) {
+  const r = await rest(`/${v}?select=credits`, { token: B.token });
+  const rows = Array.isArray(r.data) ? r.data : [];
+  const viewSum = rows.reduce((t, x) => t + (x.credits ?? 0), 0);
+  viewSum === bCredits
+    ? ok(`${v} sums to B's own ${bCredits} credits, not a leaked global aggregate`)
+    : fail(`${v} summed to ${viewSum}, but B owns ${bCredits} credits: security_invoker is missing somewhere`, r.data);
 }
+
+// my_most_ridden has no `credits` column to sum (it is one row, `limit 1`), so it is
+// compared against `bOwn` directly instead: zero rows when B owns nothing, exactly
+// one row otherwise, and that row's ride count can be at most what B owns.
+const bMostRidden = await rest('/my_most_ridden?select=coaster_id,rides', { token: B.token });
+const mrRows = Array.isArray(bMostRidden.data) ? bMostRidden.data : [];
+const mrOk = bOwn === 0
+  ? mrRows.length === 0
+  : mrRows.length === 1 && mrRows[0].rides >= 1 && mrRows[0].rides <= bOwn;
+mrOk
+  ? ok(`my_most_ridden is scoped to B (${bOwn} rides owned, view shows ${mrRows[0]?.rides ?? 0})`)
+  : fail(`my_most_ridden leaked or misrepresented rows for a user with ${bOwn} rides`, bMostRidden.data);
 
 // ---------------------------------------------------------------------------
 step(3, 'Catalogue writes: all three tables, as an enthusiast and as an admin');
@@ -351,6 +396,19 @@ const onBoard = (b) => (Array.isArray(b.data) ? b.data : []).some((r) => r.displ
   ? ok(`A ("${aName}") is on the board while opted in`)
   : fail('A opted in but does not appear on the board', aName);
 
+// Presence, not only absence. A page that renders nobody at all (a broken ranking, an
+// error boundary, a bad deploy) would previously pass this step: it never asserted
+// A's name was on the page in the first place, only that it was gone after opting
+// out. `!html.includes(name)` is true of an empty page too.
+if (APP_URL) {
+  const htmlWhileIn = await fetch(`${APP_URL}/`, { cache: 'no-store' }).then((r) => r.text()).catch(() => '');
+  htmlWhileIn.includes(aName)
+    ? ok(`A's name is present in the rendered page while opted in (${APP_URL})`)
+    : fail('A is opted in but absent from the rendered page: a page that renders nobody would pass the absence check below for the wrong reason', APP_URL);
+} else {
+  console.log('  skip  APP_URL not set, the rendered-page presence check did not run');
+}
+
 await rest(`/profiles?id=eq.${A.id}`, { token: A.token, method: 'PATCH', body: { show_on_leaderboard: false } });
 !onBoard(await rpc('leaderboard', {}))
   ? ok('opting out removed A from the board on the very next call')
@@ -362,13 +420,113 @@ if (APP_URL) {
     ? ok(`A's name is absent from the rendered page at ${APP_URL}`)
     : fail('the rendered page still shows A after opting out: the page is cached', APP_URL);
 } else {
-  console.log('  skip  APP_URL not set, the rendered-page check did not run');
+  console.log('  skip  APP_URL not set, the rendered-page absence check did not run');
 }
 
 await rest(`/profiles?id=eq.${A.id}`, { token: A.token, method: 'PATCH', body: { show_on_leaderboard: true } });
 onBoard(await rpc('leaderboard', {}))
   ? ok('opting back in restored A (positive control)')
   : fail('A did not come back after opting in again', aName);
+
+// ---------------------------------------------------------------------------
+step(8, 'catalogue_audit: the sixth table, unreachable from the API by design');
+// ---------------------------------------------------------------------------
+// TDD 3 says this table carries no client policy at all, so RLS-on-plus-zero-policy
+// makes it unreachable by construction: written only by merge_coasters, read only in
+// SQL. Nothing in this gate had ever tried it. Tried here as all three identities,
+// read and write, because "closed" is a claim about every one of those, not just one.
+
+const auditActors = [['signed out', null], ['enthusiast', B], ['admin', ADMIN]];
+
+for (const [who, actor] of auditActors) {
+  const opts = actor ? { token: actor.token } : {};
+
+  const read = await rest('/catalogue_audit?select=*&limit=5', opts);
+  (read.status === 401 || read.status === 403 || (Array.isArray(read.data) && read.data.length === 0))
+    ? ok(`${who} cannot read catalogue_audit (${read.status})`)
+    : fail(`${who} read catalogue_audit`, read.data);
+
+  const write = await rest('/catalogue_audit', {
+    ...opts, method: 'POST',
+    body: {
+      action: 'merge', actor_id: actor ? actor.id : null,
+      survivor_id: coasterId, loser_id: coasterId, loser_name: 'gate probe', rides_moved: 0,
+    },
+  });
+  (write.status === 401 || write.status === 403)
+    ? ok(`${who} cannot write catalogue_audit (${write.status})`)
+    : fail(`${who} wrote to catalogue_audit`, write.data);
+}
+
+// ---------------------------------------------------------------------------
+step(9, 'merge_coasters: the elevated function nobody had attacked');
+// ---------------------------------------------------------------------------
+// A2 in the security review: merge_coasters re-points another user's rides and is
+// one of exactly three SECURITY DEFINER functions, and this gate had never called
+// it. Attacked as anon and as enthusiast (both must fail before touching anything),
+// then exercised for real as admin, on a duplicate the test creates and cleans up
+// itself: a real ride moves from the loser to the survivor, and the loser is gone.
+
+const anonMerge = await rpc('merge_coasters', { survivor: coasterId, loser: coasterId });
+(anonMerge.status === 401 || anonMerge.status === 403)
+  ? ok(`signed-out call to merge_coasters rejected (${anonMerge.status})`)
+  : fail('a signed-out call reached merge_coasters', anonMerge.data);
+
+const enthusiastMerge = await rpc('merge_coasters', { survivor: coasterId, loser: coasterId }, { token: B.token });
+(enthusiastMerge.status === 401 || enthusiastMerge.status === 403)
+  ? ok(`enthusiast call to merge_coasters rejected (${enthusiastMerge.status})`)
+  : fail('an enthusiast call reached merge_coasters', enthusiastMerge.data);
+
+const untouched = await rest(`/coasters?id=eq.${coasterId}&select=id`, { token: A.token });
+(untouched.data?.length === 1)
+  ? ok('the probed coaster is unchanged after both blocked calls')
+  : fail('a blocked merge_coasters call altered the catalogue anyway', untouched.data);
+
+// positive control: admin merging a duplicate this run creates for the purpose
+const mergePark = (await rest('/parks?select=id&limit=1', { token: A.token })).data?.[0]?.id;
+const survivorMk = await rest('/coasters', {
+  token: ADMIN.token, method: 'POST', prefer: 'return=representation',
+  body: { name: `Gate Merge Survivor ${stamp}`, park_id: mergePark, track_type: 'steel' },
+});
+const loserMk = await rest('/coasters', {
+  token: ADMIN.token, method: 'POST', prefer: 'return=representation',
+  body: { name: `Gate Merge Loser ${stamp}`, park_id: mergePark, track_type: 'steel' },
+});
+const survivorId = survivorMk.data?.[0]?.id;
+const loserId = loserMk.data?.[0]?.id;
+if (!survivorId || !loserId) {
+  console.error('could not create the merge fixture coasters', survivorMk.data, loserMk.data);
+  process.exit(2);
+}
+// the survivor is cleaned up here; the loser is not, because merge_coasters deletes
+// it itself as part of a correct merge, and this cleanup entry must run after the
+// ride below is deleted (FK: coaster_id is on delete restrict), so it is pushed
+// first and undone last (cleanup runs in reverse).
+cleanup.push(() => rest(`/coasters?id=eq.${survivorId}`, { token: ADMIN.token, method: 'DELETE' }));
+
+// give the loser one of A's rides, so the merge moves something real and measurable
+const dupRide = await rest('/rides', {
+  token: A.token, method: 'POST', prefer: 'return=representation',
+  body: { user_id: A.id, coaster_id: loserId, ridden_on: '2026-02-02' },
+});
+const dupRideId = dupRide.data?.[0]?.id;
+if (!dupRideId) { console.error("could not create A's fixture ride on the merge loser", dupRide); process.exit(2); }
+cleanup.push(() => rest(`/rides?id=eq.${dupRideId}`, { token: A.token, method: 'DELETE' }));
+
+const merged = await rpc('merge_coasters', { survivor: survivorId, loser: loserId }, { token: ADMIN.token });
+(merged.status === 200 && merged.data === 1)
+  ? ok(`admin merged the duplicate: ${merged.data} ride moved (positive control)`)
+  : fail('admin could not merge a duplicate it is allowed to own', merged);
+
+const loserGone = await rest(`/coasters?id=eq.${loserId}&select=id`, { token: A.token });
+(Array.isArray(loserGone.data) && loserGone.data.length === 0)
+  ? ok('the losing coaster no longer exists after the merge')
+  : fail('the losing coaster survived the merge', loserGone.data);
+
+const rideMoved = await rest(`/rides?id=eq.${dupRideId}&select=coaster_id`, { token: A.token });
+rideMoved.data?.[0]?.coaster_id === survivorId
+  ? ok("the ride that was on the loser now points at the survivor")
+  : fail('the ride did not move to the survivor', rideMoved.data);
 
 // ---------------------------------------------------------------------------
 console.log('\nCleaning up what this run created');

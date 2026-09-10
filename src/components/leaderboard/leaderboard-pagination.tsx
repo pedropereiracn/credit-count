@@ -48,7 +48,7 @@ function PageLink({
     return (
       <span
         aria-disabled="true"
-        className="inline-flex h-8 min-w-24 items-center justify-center rounded-lg border border-border px-2.5 text-sm font-medium text-muted-foreground/50"
+        className="inline-flex min-h-11 min-w-24 items-center justify-center rounded-lg border border-border px-2.5 text-sm font-medium text-muted-foreground/50"
       >
         {label}
       </span>
@@ -56,7 +56,7 @@ function PageLink({
   }
 
   return (
-    <Button asChild variant="outline" className="min-w-24">
+    <Button asChild variant="outline" className="min-h-11 min-w-24">
       <Link href={href}>{label}</Link>
     </Button>
   )

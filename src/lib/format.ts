@@ -1,13 +1,26 @@
 /** Small shared formatters. Owned by phase 0: read by every screen, written by none. */
 
-const COUNTRY_NAMES: Record<string, string> = {
-  GB: 'United Kingdom',
-  US: 'United States',
-}
+/**
+ * ISO alpha-2 to a name a person recognises.
+ *
+ * This was a hand-written map of GB and US. The catalogue then gained a third
+ * country and every screen started showing the raw code "DE" beside spelled-out
+ * "United Kingdom". Patching it country by country only moves the bug: an admin
+ * can add a park anywhere, and the next code would break it again.
+ *
+ * Intl.DisplayNames ships with the runtime and knows every code, so the map that
+ * had to be maintained by hand simply stops existing. The try/catch is for an
+ * invalid code rather than a missing one: the database constraint already refuses
+ * anything that is not two capital letters.
+ */
+const NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-/** ISO alpha-2 to a name a person recognises. Falls back to the code itself. */
 export function countryName(code: string): string {
-  return COUNTRY_NAMES[code] ?? code
+  try {
+    return NAMES.of(code.toUpperCase()) ?? code
+  } catch {
+    return code
+  }
 }
 
 /** A ride date, as an enthusiast would write it. */

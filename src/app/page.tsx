@@ -87,7 +87,7 @@ async function LeaderboardSection({ page }: { page: number }) {
         <EmptyState
           title="Nobody is on the board yet."
           action={
-            <Button asChild>
+            <Button asChild className="min-h-11">
               <Link href="/signup">Sign up</Link>
             </Button>
           }
@@ -102,7 +102,7 @@ async function LeaderboardSection({ page }: { page: number }) {
       <EmptyState
         title="No more results."
         action={
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="min-h-11">
             <Link href="/">Back to the top</Link>
           </Button>
         }

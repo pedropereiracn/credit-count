@@ -7,7 +7,7 @@
 
 ## 1. Data model
 
-Six tables, seeded with 46 real coasters across 2 countries, 10 parks, 14 manufacturers and 3 track types, plus demo accounts carrying rides, so the board and the breakdowns mean something when demonstrated (SOW §6). `parks` and `manufacturers` are lookups, not free text on `coasters`: SOW §7 names inconsistent entries as a risk to comparability. A unique index on `(park_id, lower(name))` keeps duplicates out while clones across parks stay legal.
+Six tables, seeded with 52 real coasters across 3 countries, 12 parks, 14 manufacturers and 3 track types, plus demo accounts carrying rides, so the board and the breakdowns mean something when demonstrated (SOW §6). `parks` and `manufacturers` are lookups, not free text on `coasters`: SOW §7 names inconsistent entries as a risk to comparability. A unique index on `(park_id, lower(name))` keeps duplicates out while clones across parks stay legal.
 
 | Table | Columns that matter |
 |---|---|

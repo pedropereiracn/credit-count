@@ -47,7 +47,7 @@ export function SignupForm({ next }: { next: string }) {
         error={state.fieldErrors.displayName}
       />
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className="min-h-11 w-full" disabled={pending}>
         {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
         Create account
       </Button>

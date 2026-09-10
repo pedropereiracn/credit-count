@@ -79,20 +79,20 @@ export function LogRideForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="riddenOn">Date</Label>
-        <Input id="riddenOn" name="riddenOn" type="date" defaultValue={today()} max={today()} required />
+        <Input id="riddenOn" name="riddenOn" type="date" className="h-11" defaultValue={today()} max={today()} required />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="note">Note (optional)</Label>
-        <Input id="note" name="note" placeholder="Row, seat, weather" maxLength={280} />
+        <Input id="note" name="note" className="h-11" placeholder="Row, seat, weather" maxLength={280} />
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending} className="flex-1">
+        <Button type="submit" disabled={pending} className="min-h-11 flex-1">
           {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
           Log ride
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={pending}>
+        <Button type="button" variant="outline" className="min-h-11" onClick={onCancel} disabled={pending}>
           Cancel
         </Button>
       </div>

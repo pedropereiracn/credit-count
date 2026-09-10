@@ -21,6 +21,7 @@ export function TrackTypeField({ defaultValue = 'steel' }: { defaultValue?: stri
             type="button"
             variant={value === t ? 'default' : 'outline'}
             size="sm"
+            className="min-h-11"
             aria-pressed={value === t}
             onClick={() => setValue(t)}
           >

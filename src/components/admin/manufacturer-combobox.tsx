@@ -49,6 +49,7 @@ export function ManufacturerCombobox({
               type="button"
               variant="ghost"
               size="icon-xs"
+              className="min-h-11 min-w-11"
               onClick={() => {
                 setMode(defaultManufacturerId ? 'existing' : 'unknown')
                 setQuery('')
@@ -60,6 +61,7 @@ export function ManufacturerCombobox({
           </div>
           <Input
             name="manufacturer_new_name"
+            className="h-11"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Manufacturer name"
@@ -77,7 +79,7 @@ export function ManufacturerCombobox({
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full justify-between font-normal"
+                className="min-h-11 w-full justify-between font-normal"
               >
                 {mode === 'unknown' ? (
                   <span className="text-muted-foreground">Unknown / not specified</span>

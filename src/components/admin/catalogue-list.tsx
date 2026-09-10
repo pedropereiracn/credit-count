@@ -74,7 +74,7 @@ export function CatalogueList({
             {manufacturersInUse < manufacturerCount && ` (${manufacturersInUse} in use)`}
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="min-h-11">
           <Link href="/admin/coasters/new">Add coaster</Link>
         </Button>
       </div>
@@ -85,9 +85,9 @@ export function CatalogueList({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by coaster or park"
           aria-label="Search the catalogue"
-          className="sm:max-w-sm"
+          className="h-11 sm:max-w-sm"
         />
-        <label className="flex items-center gap-2 text-sm font-semibold text-muted-foreground select-none">
+        <label className="flex min-h-11 items-center gap-2 text-sm font-semibold text-muted-foreground select-none">
           <input
             type="checkbox"
             checked={showRetired}
@@ -104,7 +104,7 @@ export function CatalogueList({
             <EmptyState title={`No coaster called "${trimmedSearch}".`}>
               Not in the catalogue yet. Add it now and enthusiasts can log it straight away.
               <div className="mt-4">
-                <Button asChild>
+                <Button asChild className="min-h-11">
                   <Link href={`/admin/coasters/new?name=${encodeURIComponent(trimmedSearch)}`}>
                     Add &ldquo;{trimmedSearch}&rdquo;
                   </Link>
@@ -115,7 +115,7 @@ export function CatalogueList({
             <EmptyState title="The catalogue is empty.">
               Add the first coaster. Every ride anyone logs points at an entry here.
               <div className="mt-4">
-                <Button asChild>
+                <Button asChild className="min-h-11">
                   <Link href="/admin/coasters/new">Add coaster</Link>
                 </Button>
               </div>
@@ -166,7 +166,7 @@ function CatalogueRow({ coaster: c, allCoasters }: { coaster: CoasterListItem; a
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-border pt-3">
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm" className="min-h-11">
           <Link href={`/admin/coasters/${c.id}`}>Edit</Link>
         </Button>
         <RetireToggleButton id={c.id} name={c.name} retired={retired} />
@@ -174,7 +174,7 @@ function CatalogueRow({ coaster: c, allCoasters }: { coaster: CoasterListItem; a
           loser={{ id: c.id, name: c.name }}
           candidates={candidates}
           trigger={
-            <Button type="button" variant="ghost" size="sm">
+            <Button type="button" variant="ghost" size="sm" className="min-h-11">
               Merge
             </Button>
           }

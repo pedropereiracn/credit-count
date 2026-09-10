@@ -74,6 +74,7 @@ export function CoasterForm({
               <Input
                 id="coaster-name"
                 name="name"
+                className="h-11"
                 defaultValue={coaster?.name ?? initialName}
                 placeholder="As the park spells it"
                 required
@@ -115,7 +116,9 @@ export function CoasterForm({
                     : 'Operating. Listed in the catalogue and found by search.'}
                 </p>
               </div>
-              <Switch checked={retired} onCheckedChange={setRetired} aria-label="Retired" />
+              <label className="-m-2.5 inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center p-2.5">
+                <Switch checked={retired} onCheckedChange={setRetired} aria-label="Retired" />
+              </label>
               <input type="hidden" name="retired" value={retired ? '1' : '0'} />
               <input type="hidden" name="existing_retired_at" value={coaster?.retired_at ?? ''} />
             </div>
@@ -123,11 +126,11 @@ export function CoasterForm({
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending} className="min-h-11">
             {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
             {isEdit ? 'Save changes' : 'Add to catalogue'}
           </Button>
-          <Button asChild variant="ghost">
+          <Button asChild variant="ghost" className="min-h-11">
             <Link href="/admin">Cancel</Link>
           </Button>
         </div>
@@ -145,7 +148,7 @@ export function CoasterForm({
               loser={{ id: coaster.id, name: coaster.name }}
               candidates={mergeCandidates}
               trigger={
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="min-h-11">
                   Merge into another coaster
                 </Button>
               }

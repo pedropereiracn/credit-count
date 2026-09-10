@@ -34,7 +34,7 @@ export default async function RidesPage({ searchParams }: RidesPageProps) {
           <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">My rides</h1>
           <p className="mt-1 text-sm font-semibold text-muted-foreground">Every ride, newest first.</p>
         </div>
-        <Button asChild>
+        <Button asChild className="min-h-11">
           <Link href="/dashboard">Log a ride</Link>
         </Button>
       </header>
@@ -96,7 +96,7 @@ async function RidesSection({ page }: { page: number }) {
         <EmptyState
           title="No rides yet."
           action={
-            <Button asChild>
+            <Button asChild className="min-h-11">
               <Link href="/dashboard">Log a ride</Link>
             </Button>
           }
@@ -111,7 +111,7 @@ async function RidesSection({ page }: { page: number }) {
       <EmptyState
         title="No more results."
         action={
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="min-h-11">
             <Link href="/rides">Back to the top</Link>
           </Button>
         }

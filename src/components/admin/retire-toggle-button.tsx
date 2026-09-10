@@ -22,7 +22,7 @@ export function RetireToggleButton({ id, name, retired }: { id: string; name: st
   }
 
   return (
-    <Button type="button" variant="ghost" size="sm" onClick={toggle} disabled={pending}>
+    <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={toggle} disabled={pending}>
       {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
       {retired ? 'Reopen' : 'Retire'}
     </Button>

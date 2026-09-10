@@ -57,11 +57,13 @@ export function DeleteRideDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
+        {/* min-h-11 -mx-2: same 44px tap-target fix as EditRideDialog's trigger,
+            same reasoning. */}
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-auto px-0 font-bold text-destructive hover:text-destructive"
+          className="-mx-2 min-h-11 px-2 font-bold text-destructive hover:text-destructive"
         >
           Delete
         </Button>
@@ -76,8 +78,13 @@ export function DeleteRideDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep it</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" disabled={pending} onClick={handleDelete}>
+          <AlertDialogCancel className="min-h-11">Keep it</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            className="min-h-11"
+            disabled={pending}
+            onClick={handleDelete}
+          >
             Delete ride
           </AlertDialogAction>
         </AlertDialogFooter>

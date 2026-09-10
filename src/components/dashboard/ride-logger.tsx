@@ -79,6 +79,7 @@ export function RideLogger({
         placeholder="Coaster or park, e.g. Stealth"
         aria-label="Search coasters"
         autoComplete="off"
+        className="h-11"
       />
 
       <RideSearchResults
