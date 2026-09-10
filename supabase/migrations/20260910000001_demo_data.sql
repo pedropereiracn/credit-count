@@ -1,0 +1,26 @@
+-- 20260910000001_demo_data.sql  Demo data: why this file has no data in it.
+--
+-- SOW 6 asks for the catalogue to be seeded enough that the leaderboard and the
+-- dashboard breakdowns mean something "when demonstrated". That work exists,
+-- but it cannot be SQL run at migration time, for one reason: it needs 8 to 12
+-- real `auth.users` identities, each with a hashed password and a confirmed
+-- session, and a migration has no access to the GoTrue admin API that mints
+-- those. `insert into auth.users (...)` from a migration would either fail on
+-- the password hash or produce an account nobody can ever sign into.
+--
+-- That is exactly why AGENTS.md asks for a script instead: `scripts/seed-demo.mjs`
+-- creates the demo accounts through the Supabase admin API (SUPABASE_SECRET_KEY,
+-- local only, see CLAUDE.md section "Environment"), then seeds their rides and
+-- their `show_on_leaderboard` opt-in directly with that same service-role
+-- client, scoped only to the identities it just created plus the one delivered
+-- enthusiast account. Running it twice deletes and re-inserts the rides it owns
+-- rather than duplicating them, which is where "idempotent" actually lives for
+-- this piece of the seed.
+--
+-- This migration is deliberately a no-op. It exists so the ownership map in
+-- AGENTS.md ("supabase/migrations/*_demo_data.sql ... A3") has a real file at
+-- the path it names, and so a future schema change made specifically for demo
+-- purposes has an obvious place to land instead of reopening a frozen
+-- migration. Nothing below creates or alters a table, a policy, a grant, a
+-- view or a function: the security surface an approver reads stays exactly the
+-- 166 lines it already was (docs/TDD.md section 6, "Directing the AI").

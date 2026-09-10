@@ -28,7 +28,14 @@ begin
   select string_agg(p.proname, ', ') into faltando
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef
-    and (p.proconfig is null or not ('search_path=' = any(p.proconfig)));
+    -- Postgres renderiza o search_path vazio como search_path="" (com aspas), nao
+    -- como search_path=. A comparacao literal anterior acusava as tres funcoes
+    -- corretas, todas as vezes. Aqui a verificacao normaliza antes de comparar.
+    and not exists (
+      select 1 from unnest(coalesce(p.proconfig, '{}')) as cfg
+      where btrim(split_part(cfg, '=', 1)) = 'search_path'
+        and btrim(substr(cfg, strpos(cfg, '=') + 1), '"''') = ''
+    );
   if faltando is not null then
     raise exception 'funcao definer sem search_path travado: %', faltando;
   end if;

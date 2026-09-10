@@ -11,7 +11,15 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 
 /** Everything a visitor may reach without signing in (FR1). */
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth']
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/signup',
+  '/forgot-password',   // reached precisely by people who cannot sign in
+  '/auth',              // token confirmation and OAuth callback
+]
+// '/reset-password' is deliberately absent: it is only ever reached holding a valid
+// recovery session, so leaving it private is one more layer rather than a dead end.
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })

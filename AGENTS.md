@@ -301,6 +301,11 @@ prototype")
   prefix, naming the agent: `feat(dashboard): stats, search and three-tap ride logging`.
 - **Nobody commits mid-wave.** Commits happen when a wave closes, so a broken intermediate
   state never reaches the branch.
+- **Only one agent may run `npm run build` at a time.** Several agents in one tree share
+  `.next/`, and concurrent builds corrupt each other in ways that look like unrelated
+  failures. While a wave is running, type-check with `npx tsc --noEmit` instead, and run
+  a dev server on your own port (`npm run dev -- -p 30NN`) if you need a browser.
+  The full build runs once, when the wave closes.
 - **`npm run build` before every commit.** A red build committed by one agent blocks every
   other agent, and they will waste a turn each discovering why.
 - The security gate runs at the end of every wave, not only at the end. A policy problem

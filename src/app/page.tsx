@@ -1,69 +1,125 @@
-import Image from "next/image";
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { EmptyState } from '@/components/empty-state'
+import { RowsSkeleton } from '@/components/skeletons'
+import { Button } from '@/components/ui/button'
+import { LeaderboardList } from '@/components/leaderboard/leaderboard-list'
+import { LeaderboardPagination } from '@/components/leaderboard/leaderboard-pagination'
+import { AboutCredits } from '@/components/leaderboard/about-credits'
+import type { LeaderboardRow } from '@/components/leaderboard/types'
 
-export default function Home() {
+/**
+ * The public leaderboard: a visitor's front door to the product. FR7 says opting out
+ * has to land on the next request, and a cached page is exactly what would break
+ * that, so this route is never allowed to serve a stale copy.
+ */
+export const dynamic = 'force-dynamic'
+
+/**
+ * `leaderboard()` caps a page at 100 rows on its own; this asks for fewer, it never
+ * asks for more. See supabase/migrations/20260909000003_functions.sql.
+ */
+const PAGE_SIZE = 25
+
+type HomePageProps = {
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+      <section className="min-w-0">
+        <header>
+          <p className="text-xs font-bold tracking-[0.14em] text-primary uppercase">
+            Public leaderboard
           </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+            Most credits
+          </h1>
+          <p className="mt-3 max-w-prose text-sm leading-relaxed font-semibold text-muted-foreground sm:text-base">
+            A <span className="text-foreground">credit</span> is one coaster you have ridden
+            at least once, however many times you ride it again. Ranked by credits, highest
+            first; ties share a rank.
+          </p>
+        </header>
+
+        <div className="mt-8">
+          <Suspense fallback={<RowsSkeleton rows={10} />}>
+            <LeaderboardSection page={page} />
+          </Suspense>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      <AboutCredits />
     </div>
-  );
+  )
+}
+
+async function LeaderboardSection({ page }: { page: number }) {
+  const offset = (page - 1) * PAGE_SIZE
+
+  // The only sanctioned crossing of the `profiles`/`rides` boundary on this page.
+  // Never `.from('profiles')` or `.from('rides')` here: docs/TDD.md section 4.
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('leaderboard', {
+    page_size: PAGE_SIZE,
+    page_offset: offset,
+  })
+
+  if (error) {
+    console.error('leaderboard rpc failed', error)
+    return (
+      <EmptyState title="The leaderboard could not be loaded.">
+        Reloading the page usually fixes this. Nothing about your own account depends on it.
+      </EmptyState>
+    )
+  }
+
+  const rows = (data ?? []) as LeaderboardRow[]
+
+  if (rows.length === 0) {
+    if (page === 1) {
+      return (
+        <EmptyState
+          title="Nobody is on the board yet."
+          action={
+            <Button asChild>
+              <Link href="/signup">Sign up</Link>
+            </Button>
+          }
+        >
+          Enthusiasts show up here only after switching on the public leaderboard from their
+          settings. Be the first.
+        </EmptyState>
+      )
+    }
+
+    return (
+      <EmptyState
+        title="No more results."
+        action={
+          <Button asChild variant="outline">
+            <Link href="/">Back to the top</Link>
+          </Button>
+        }
+      >
+        That is every enthusiast currently on the board.
+      </EmptyState>
+    )
+  }
+
+  return (
+    <>
+      <LeaderboardList rows={rows} />
+      <LeaderboardPagination
+        page={page}
+        hasPrevious={page > 1}
+        hasNext={rows.length === PAGE_SIZE}
+      />
+    </>
+  )
 }
