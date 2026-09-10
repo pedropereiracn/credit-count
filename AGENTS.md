@@ -43,7 +43,7 @@ sequence, or give one a git worktree and merge deliberately.
 | `supabase/audit/checks.sql` | Phase 0 | frozen |
 | `scripts/verify-security.mjs` | Phase 0 | extended only in Phase 4 |
 | `src/lib/supabase/**`, `src/lib/types.ts`, `src/lib/format.ts` | Phase 0 | read-only to everyone |
-| `src/middleware.ts` | Phase 0 | read-only |
+| `src/proxy.ts` | Phase 0 | read-only |
 | `src/app/layout.tsx`, `src/app/globals.css` | Phase 0 | read-only |
 | `src/components/ui/**` (shadcn) | Phase 0 | read-only |
 | `src/components/app-header.tsx`, `empty-state.tsx`, `skeletons.tsx` | Phase 0 | read-only |
@@ -98,7 +98,7 @@ not done.
 `src/app/(auth)/actions.ts`, `src/app/auth/callback/route.ts`,
 `src/components/auth/**`
 
-**Reads:** `src/lib/supabase/**`, `src/middleware.ts`, `src/components/ui/**`,
+**Reads:** `src/lib/supabase/**`, `src/proxy.ts`, `src/components/ui/**`,
 `prototipo/index.html` (`#/login` and `#/signup`)
 
 **Covers:** SOW §4.1.1, FR1 (the sign-up page a visitor may reach)
@@ -266,7 +266,7 @@ signed-out leaderboard shows on the next load.
    and the screen must explain that rather than showing a raw error.
 5. Merge duplicates: pick survivor and loser, show how many rides will move, confirm that
    it cannot be undone, call `merge_coasters`.
-6. The route is invisible to non-admins in the header, **and** the middleware blocks it,
+6. The route is invisible to non-admins in the header, **and** the the proxy blocks it,
    **and** the database refuses the writes. Three layers, and only the third is the one
    that counts.
 
