@@ -7,7 +7,7 @@
 
 ## 1. Data model
 
-Six tables, seeded with 52 real coasters across 3 countries, 12 parks, 14 manufacturers and 3 track types, plus demo accounts carrying rides, so the board and the breakdowns mean something when demonstrated (SOW §6). `parks` and `manufacturers` are lookups, not free text on `coasters`: SOW §7 names inconsistent entries as a risk to comparability. A unique index on `(park_id, lower(name))` keeps duplicates out while clones across parks stay legal.
+Six tables, seeded with 52 real coasters across 3 countries, 12 parks, 14 manufacturers and 3 track types, plus demo accounts carrying rides, so the board and the breakdowns mean something when demonstrated (SOW §6). `parks` and `manufacturers` are lookups, not free text on `coasters`: SOW §7 names inconsistent entries as a risk to comparability. A unique index on `(park_id, lower(btrim(name)))` keeps duplicates out while clones across parks stay legal.
 
 | Table | Columns that matter |
 |---|---|
@@ -31,7 +31,8 @@ Six tables, seeded with 52 real coasters across 3 countries, 12 parks, 14 manufa
 | `/rides` | Every ride, newest first: coaster, park, date, note | Edit or delete one | Same invitation |
 | `/settings` | Display name; leaderboard toggle, state in words | Save | |
 | `/admin` | Catalogue, searchable, retired hidden. Admins only | Add, edit, retire, merge | Offers to add what was searched |
-| `/admin/coasters/[id]` | Name, park, manufacturer, type, retired | Save, retire, merge | |
+| `/admin/coasters/[id]`, `/admin/coasters/new` | Name, park, manufacturer, type, retired | Save, retire, merge | |
+| `/auth/callback`, `/auth/confirm` | No UI: they complete the OAuth code exchange and the password-recovery token | Redirect onward | |
 
 **Navigation and session.** The header links every route above, admin only when the profile says so; middleware keeps signed-out visitors off private routes. Server components pass the user's JWT to Postgres, which is what makes `auth.uid()` and the views below resolve to one person.
 
@@ -74,7 +75,7 @@ Counting credits means reading `rides`, which only its owner may read. Three fun
 
 Two values reach the browser by design: the project URL, an address rather than a secret, and the publishable key. Everything else stays in one untracked `.env.local` and never reaches Vercel or the repository: the secret key (seeding demo accounts locally), the connection string (the SQL audit), and the delivered account passwords, which AC5 names as credentials and the gate therefore reads from the environment.
 
-The claim an approver can check in seconds: **the Vercel project has exactly two environment variables, and both begin with `NEXT_PUBLIC_`.** No runtime code holds a privilege the browser lacks, so a Server Action bug leaks nothing. A pre-push hook in `.githooks/` blocks key material in tracked files, a literal password inside `scripts/`, and any elevated variable named under `src/`.
+The claim an approver can check in seconds: **the Vercel project has exactly two environment variables, and both begin with `NEXT_PUBLIC_`.** No runtime code holds a privilege the browser lacks, so a Server Action bug leaks nothing. A pre-push hook in `.githooks/` blocks key material in tracked files, a literal password inside `scripts/`, and any elevated variable named under `src/`. The gate itself is run by hand and before a deploy rather than wired into that hook, since it needs the running project and the test-account secrets, which a hook on a shared repository should not carry.
 
 ## 6. The verification gate
 
@@ -87,8 +88,10 @@ AC2 and AC4 describe an attack, so the delivery includes it. `scripts/verify-sec
 5. read the leaderboard signed out; it must carry rows, and their keys must be exactly `rank`, `display_name`, `credits` (AC3), since an assertion about keys is vacuously true on an empty board
 6. log three coasters as A, one twice, asserting credits and rides move correctly (AC1)
 7. turn A's leaderboard opt-in off, re-fetch the rendered page signed out and require A's name absent from the HTML, turn it back on (FR7's "immediately", asserted against the page, since caching is what actually breaks it)
+8. read and write `catalogue_audit` signed out, as B and as admin: all refused, since it carries no client policy at all
+9. call `merge_coasters` signed out and as B (both refused), then as admin on a pair this step creates and removes, asserting exactly the rides moved come back (the one elevated function a client may call, so the one whose body must re-check the role)
 
-Every destructive attempt is followed by A re-reading the row, since PostgREST answers 204 to a DELETE matching nothing. Steps 3, 5, 6 and 7 are positive controls: a gate proving only failures would pass with the API off. It exits non-zero and runs before push, carrying the §2 invariant per account. A SQL audit adds what no client sees: RLS everywhere, no elevated function outside the inventory, no view missing `security_invoker`, and it removes the account each run created.
+Every destructive attempt is followed by A re-reading the row, since PostgREST answers 204 to a DELETE matching nothing. Steps 3, 5, 6, 7 and 9 are positive controls: a gate proving only failures would pass with the API off. It exits non-zero and runs before push, carrying the §2 invariant per account. A SQL audit adds what no client sees: RLS everywhere, no elevated function outside the inventory, no view missing `security_invoker`, and it deletes the accounts the gate leaves behind (deleting a user needs the secret key, which the gate is not allowed to hold, so the SQL audit does it).
 
 **Directing the AI.** Claude Code wrote the screens, the seed, this script and the first draft of this document. I read the security surface myself, line by line: the grants, the policies and the three elevated functions, because there a plausible generated line is a breach rather than a bug. The rest of the code I hold to the gate instead of to my own attention, since the gate runs on every push and attention does not.
 
