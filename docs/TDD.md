@@ -26,6 +26,7 @@ Six tables, seeded with 46 real coasters across 2 countries, 10 parks, 14 manufa
 |---|---|---|---|
 | `/` | Rank, display name and credits, and nothing else | Sign up | Nobody has opted in |
 | `/signup`, `/login` | Email and password; sign-up also takes the display name | Create the account, or sign in | |
+| `/forgot-password`, `/reset-password` | Supabase's own recovery flow, nothing built on top (SOW §4.2) | Send the link, then set the password | |
 | `/dashboard` | Credits headline, total rides, four breakdowns, recent rides | Log a ride | What a credit is, focused search, coasters to start |
 | `/rides` | Every ride, newest first: coaster, park, date, note | Edit or delete one | Same invitation |
 | `/settings` | Display name; leaderboard toggle, state in words | Save | |
