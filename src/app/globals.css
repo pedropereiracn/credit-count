@@ -196,3 +196,18 @@ h1, h2, h3, .font-heading {
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
+/* ---------------------------------------------------------------------------
+   Credit progress track (dashboard). The prototype's elevation profile, bound
+   to the app palette. Presentation only; the position comes from the data.
+   --------------------------------------------------------------------------- */
+.cc-rail-base { fill: none; stroke: var(--chart-5); stroke-width: 4; stroke-linecap: round; }
+.cc-rail-fill { fill: none; stroke: var(--primary); stroke-width: 4; stroke-linecap: round;
+  transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1); }
+.cc-support   { stroke: var(--chart-5); stroke-width: 2; stroke-linecap: round; }
+.cc-ground    { stroke: var(--chart-5); stroke-width: 2; stroke-dasharray: 0 7; stroke-linecap: round; }
+.cc-platform  { fill: var(--secondary); stroke: var(--chart-5); stroke-width: 2; }
+.cc-cart-body { fill: var(--primary); }
+.cc-cart-wheel{ fill: var(--foreground); }
+.cc-sign-plate{ fill: var(--card); stroke: var(--foreground); stroke-width: 2.5; }
+.cc-sign-post { stroke: var(--foreground); stroke-width: 2.5; }
+.cc-sign-text { font-family: var(--font-heading); font-weight: 700; font-size: 16px; fill: var(--foreground); }

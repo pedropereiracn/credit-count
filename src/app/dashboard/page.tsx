@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { EmptyState } from '@/components/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditHeadline } from '@/components/dashboard/credit-headline'
+import { CreditTrack } from '@/components/dashboard/credit-track'
 import { BreakdownCard, type BreakdownRow } from '@/components/dashboard/breakdown-card'
 import { MostRiddenCard } from '@/components/dashboard/most-ridden-card'
 import { RecentRidesCard, type RecentRideRow } from '@/components/dashboard/recent-rides-card'
@@ -111,7 +112,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start">
-        <CreditHeadline credits={credits} rides={totalRides} />
+        <div>
+          <CreditHeadline credits={credits} rides={totalRides} />
+          <CreditTrack credits={credits} />
+        </div>
 
         <Card>
           <CardHeader>

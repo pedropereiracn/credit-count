@@ -28,6 +28,11 @@ type HomePageProps = {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const { page: pageParam } = await searchParams
+
+  // The header already reflects the session; the aside must too, or it offers a
+  // signed-in visitor an account they already have.
+  const supabaseAuth = await createClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
 
   return (
@@ -54,7 +59,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       </section>
 
-      <AboutCredits />
+      <AboutCredits signedIn={!!user} />
     </div>
   )
 }

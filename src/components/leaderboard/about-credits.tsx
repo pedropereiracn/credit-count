@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button'
 /**
  * The aside that turns a visitor into a sign-up: a CTA, then the two mechanics of
  * the board (why "credits" and not "rides", and why the list is short by design).
- * Nothing here reads from the database; it is copy only.
+ *
+ * When the viewer is already signed in, the call to action sends them to their
+ * dashboard instead of to sign-up. Offering "create an account" to someone who has
+ * one is the kind of small wrongness that makes a product feel unfinished.
  */
-export function AboutCredits() {
+export function AboutCredits({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <aside className="space-y-4 lg:sticky lg:top-24">
       <div className="rounded-2xl border border-border bg-foreground p-5 text-background shadow-[0_4px_0_var(--color-chart-5)]">
@@ -16,7 +19,9 @@ export function AboutCredits() {
           Search the coaster, pick it, confirm. Your credits and rides add up on their own.
         </p>
         <Button asChild className="mt-4 min-h-11">
-          <Link href="/signup">Start your count</Link>
+          <Link href={signedIn ? '/dashboard' : '/signup'}>
+            {signedIn ? 'Back to your dashboard' : 'Start your count'}
+          </Link>
         </Button>
       </div>
 
