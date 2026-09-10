@@ -32,7 +32,7 @@ export async function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-2 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+        <Link href="/" className="group flex shrink-0 items-center gap-2">
           <CoasterMark className="h-7 w-auto text-primary" animate />
           <span className="font-heading text-lg font-bold tracking-tight">
             Credit<span className="text-primary">Count</span>
