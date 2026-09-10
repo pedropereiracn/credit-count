@@ -59,11 +59,15 @@ export async function searchCoasters(
   const riddenIds = new Set((ownRides ?? []).map((r) => r.coaster_id))
 
   const q = query.trim().toLowerCase()
+  // Retiring hides a coaster from browsing but keeps it searchable (docs/TDD.md
+  // sections 2 and 7): a demolished coaster is still a credit someone can log, so a
+  // typed search finds it (with its Retired badge), but the default browse list does
+  // not clutter with coasters that no longer stand.
   const matches = q
     ? rows.filter(
         (c) => c.name.toLowerCase().includes(q) || (c.park?.name ?? '').toLowerCase().includes(q),
       )
-    : rows
+    : rows.filter((c) => !c.retired_at)
 
   const safePage = Math.max(1, Math.floor(page) || 1)
   const start = (safePage - 1) * PAGE_SIZE
