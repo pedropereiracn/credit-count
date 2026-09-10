@@ -1,16 +1,16 @@
--- 0002_security.sql  Credit Count: RLS, concessoes e politicas.
+-- 0002_security.sql  Credit Count: RLS, grants and policies.
 --
--- ESTE E' O ARQUIVO. Se uma linha aqui estiver sutilmente errada, nao e' um bug,
--- e' dado privado de outra pessoa saindo pela API. Le linha por linha.
+-- THIS IS THE FILE. If a line here is subtly wrong, it is not a bug,
+-- it is someone else's private data leaving through the API. Read it line by line.
 --
--- Ordem mental correta, e o Postgres avalia nesta ordem:
---   1. a CONCESSAO (grant) decide se o papel alcanca a tabela e a COLUNA
---   2. a POLITICA (policy) decide quais LINHAS, por comando
--- Concessao vem antes. Um PATCH em coluna sem concessao morre antes da RLS existir.
+-- The correct mental order, and the order Postgres evaluates in:
+--   1. the GRANT decides whether the role reaches the table and the COLUMN
+--   2. the POLICY decides which ROWS, per command
+-- The grant comes first. A PATCH on a column with no grant dies before RLS exists.
 
 -- ---------------------------------------------------------------------------
--- 1. RLS ligada em tudo, antes de qualquer politica.
---    Tabela com RLS ligada e zero politica e' tabela inalcancavel. O padrao e' negar.
+-- 1. RLS on everywhere, before any policy.
+--    A table with RLS on and zero policies is an unreachable table. The default is deny.
 -- ---------------------------------------------------------------------------
 alter table public.profiles        enable row level security;
 alter table public.parks           enable row level security;
@@ -20,8 +20,8 @@ alter table public.rides           enable row level security;
 alter table public.catalogue_audit enable row level security;
 
 -- ---------------------------------------------------------------------------
--- 2. Zera o que o Supabase concede por padrao, e concede de novo a mao.
---    Sem este revoke, o desenho abaixo esta' apenas por cima de um padrao permissivo.
+-- 2. Reset what Supabase grants by default, and grant it again by hand.
+--    Without this revoke, the design below only sits on top of a permissive default.
 -- ---------------------------------------------------------------------------
 revoke all on all tables    in schema public from anon, authenticated;
 revoke all on all functions in schema public from anon, authenticated, public;
@@ -30,9 +30,9 @@ revoke all on all sequences in schema public from anon, authenticated;
 grant usage on schema public to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
--- 3. is_admin(): SECURITY INVOKER, entao le a propria linha sob RLS.
---    Nao pode ser usada em politica de profiles: seria recursao infinita.
---    Ela so aparece nas politicas de catalogo, e no corpo de merge_coasters.
+-- 3. is_admin(): SECURITY INVOKER, so it reads its own row under RLS.
+--    It cannot be used in a profiles policy: that would be infinite recursion.
+--    It only appears in the catalogue policies, and in the body of merge_coasters.
 -- ---------------------------------------------------------------------------
 create function public.is_admin()
 returns boolean
@@ -52,15 +52,15 @@ grant execute on function public.is_admin() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 4. profiles
---    Concessao por COLUNA. `role` esta' fora do update: e' isto, e nao a politica,
---    que faz um PATCH {"role":"admin"} falhar. E nao existe insert nem delete
---    para cliente nenhum, entao a linha so nasce pelo trigger da 0003.
+--    Grant by COLUMN. `role` is left out of the update: it is this, not the policy,
+--    that makes a PATCH {"role":"admin"} fail. And there is no insert or delete
+--    for any client, so the row is only born through the 0003 trigger.
 -- ---------------------------------------------------------------------------
 grant select (id, display_name, role, show_on_leaderboard, created_at)
   on public.profiles to authenticated;
 grant update (display_name, show_on_leaderboard)
   on public.profiles to authenticated;
--- anon nao recebe nada em profiles (FR1: visitante nao ve dado de usuario)
+-- anon receives nothing on profiles (FR1: a visitor sees no user data)
 
 create policy profiles_le_propria on public.profiles
   for select to authenticated
@@ -72,10 +72,10 @@ create policy profiles_atualiza_propria on public.profiles
   with check  (id = (select auth.uid()));
 
 -- ---------------------------------------------------------------------------
--- 5. rides: uma politica por comando, todas presas a auth.uid().
---    NAO existe ramo de admin aqui, e a ausencia e' o requisito (SOW 3).
---    `using` filtra o que ja' esta' la'; `with check` valida o que esta' entrando.
---    UPDATE precisa dos dois: sem o with check, da' para mover a ride para outro dono.
+-- 5. rides: one policy per command, all tied to auth.uid().
+--    There is NO admin branch here, and that absence is the requirement (SOW 3).
+--    `using` filters what is already there; `with check` validates what is coming in.
+--    UPDATE needs both: without the with check, a ride can be moved to another owner.
 -- ---------------------------------------------------------------------------
 grant select, insert, update, delete on public.rides to authenticated;
 
@@ -97,10 +97,10 @@ create policy rides_apaga_proprias on public.rides
   using (user_id = (select auth.uid()));
 
 -- ---------------------------------------------------------------------------
--- 6. Catalogo: TRES tabelas, e a regra e' a mesma nas tres.
---    Renomear um fabricante move a estatistica de todo mundo ao mesmo tempo,
---    entao e' o mesmo privilegio que editar um coaster (FR8, AC4).
---    anon nao recebe nada: visitante deslogado nao le catalogo (FR1).
+-- 6. Catalogue: THREE tables, and the rule is the same across all three.
+--    Renaming a manufacturer moves everyone's statistic at the same time,
+--    so it is the same privilege as editing a coaster (FR8, AC4).
+--    anon receives nothing: a logged-out visitor does not read the catalogue (FR1).
 -- ---------------------------------------------------------------------------
 grant select, insert, update, delete
   on public.coasters, public.parks, public.manufacturers to authenticated;
@@ -136,7 +136,7 @@ create policy manufacturers_apaga_admin on public.manufacturers
   for delete to authenticated using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
--- 7. catalogue_audit: NENHUMA concessao e NENHUMA politica, de proposito.
---    RLS ligada mais zero politica quer dizer inalcancavel pela API. Escrita pela
---    funcao elevada da 0003, lida so em SQL. O silencio aqui e' a decisao.
+-- 7. catalogue_audit: NO grant and NO policy, on purpose.
+--    RLS on plus zero policies means unreachable through the API. Written by the
+--    elevated function in 0003, read only in SQL. The silence here is the decision.
 -- ---------------------------------------------------------------------------

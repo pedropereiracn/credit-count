@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test'
 import { pathnameOf } from './support/ui'
 
 /**
- * Task 1: "Visitante vê o ranking e não vê mais nada; /dashboard redireciona
- * para login."
+ * Task 1: "A visitor sees the ranking and nothing else; /dashboard redirects
+ * to login."
  *
  * Uses Playwright's default, unauthenticated `page` fixture: as long as this
  * test never signs in, it is a visitor for the whole run, which is exactly

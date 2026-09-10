@@ -3,8 +3,8 @@ import { disposableUser, deleteDisposableUser } from './support/users'
 import { creditNumber, logRideViaUI, signUpViaUI } from './support/ui'
 
 /**
- * Task 4, AC1, the product's central definition: "Andar de novo na mesma
- * montanha-russa sobe rides e não sobe créditos."
+ * Task 4, AC1, the product's central definition: "Riding the same coaster
+ * again raises rides and does not raise credits."
  */
 test.describe('riding the same coaster again', () => {
   test('raises the ride count but never the credit count (AC1)', async ({ page }) => {

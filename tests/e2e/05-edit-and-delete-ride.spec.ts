@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { disposableUser, deleteDisposableUser } from './support/users'
 import { logRideViaUI, signUpViaUI } from './support/ui'
 
-/** Task 5: "Editar e apagar uma ride própria." */
+/** Task 5: "Edit and delete one's own ride." */
 test.describe('editing and deleting a ride', () => {
   test('a signed-in user can edit and then delete their own ride', async ({ page }) => {
     const user = disposableUser('edit-delete')

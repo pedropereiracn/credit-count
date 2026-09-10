@@ -12,7 +12,7 @@ export type DisposableUser = {
  * never collide with another run or another test, and a generated (never
  * literal) password, the same convention `scripts/verify-security.mjs` uses
  * for its own "account B". Never one of the delivered enthusiast/admin
- * accounts (task brief: "não dependa das contas entregues").
+ * accounts (task brief: "do not depend on the delivered accounts").
  */
 export function disposableUser(label: string): DisposableUser {
   const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`

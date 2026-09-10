@@ -3,7 +3,7 @@ import { adminCredentials, disposableUser, deleteDisposableUser } from './suppor
 import { loginViaUI, pathnameOf, signUpViaUI } from './support/ui'
 
 /**
- * Task 7: "Enthusiast é barrado em /admin, admin entra."
+ * Task 7: "An enthusiast is blocked at /admin, an admin gets in."
  *
  * There is no self-service way to become an admin (docs/TDD.md section 3:
  * `profiles.role` has no write grant for any client role), so the admin half

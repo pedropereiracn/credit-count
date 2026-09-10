@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { disposableUser, deleteDisposableUser } from './support/users'
 import { isNameOnLeaderboard, signUpViaUI } from './support/ui'
 
-/** Task 6: "Desligar o ranking esconde o nome da página pública." */
+/** Task 6: "Turning off the ranking hides the name from the public page." */
 test.describe('the public leaderboard toggle', () => {
   test('turning it off hides the name from the public page; turning it on shows it again', async ({
     page,

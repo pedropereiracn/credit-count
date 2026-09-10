@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { disposableUser, deleteDisposableUser } from './support/users'
 import { creditNumber, logRideViaUI, signUpViaUI } from './support/ui'
 
-/** Task 3: "Registrar ride em três interações, e o número de créditos sobe." */
+/** Task 3: "Log a ride in three interactions, and the credit count goes up." */
 test.describe('logging a ride', () => {
   test('three interactions (type, pick, confirm) raise the credit count', async ({ page }) => {
     const user = disposableUser('log-ride')

@@ -1,20 +1,20 @@
--- 0004_views.sql  Credit Count: as cinco estatisticas do painel.
+-- 0004_views.sql  Credit Count: the five dashboard statistics.
 --
--- `security_invoker = true` quer dizer: a view roda com a identidade de QUEM CHAMA.
--- Por isso NENHUMA delas tem `where user_id = auth.uid()`. A regra esta' escrita uma
--- vez so', na politica de rides, e as cinco herdam. Duplicar o filtro aqui criaria
--- cinco lugares novos para errar.
+-- `security_invoker = true` means: the view runs with the identity of THE CALLER.
+-- That is why NONE of them has `where user_id = auth.uid()`. The rule is written
+-- once, in the rides policy, and the five inherit it. Duplicating the filter here would
+-- create five new places to get it wrong.
 --
--- O preco disso: se uma view perder a marca `security_invoker`, ela passa a servir o
--- agregado de TODO MUNDO, em silencio. E o invariante interno (creditos = soma dos
--- agrupamentos) continua batendo, porque ele mede consistencia, nao dono. Por isso o
--- passo 2 do portao le as cinco como um segundo usuario, e a auditoria da 0005 recusa
--- qualquer view sem a marca.
+-- The price of that: if a view loses the `security_invoker` flag, it starts serving
+-- EVERYONE's aggregate, silently. And the internal invariant (credits = sum of the
+-- groupings) still holds, because it measures consistency, not ownership. That is why
+-- step 2 of the gate reads the five as a second user, and the 0005 audit rejects
+-- any view without the flag.
 
 create view public.my_totals with (security_invoker = true) as
   select
-    count(distinct r.coaster_id)::integer as credits,   -- FR4: a manchete
-    count(*)::integer                     as rides      -- FR4: e o total de rides
+    count(distinct r.coaster_id)::integer as credits,   -- FR4: the headline
+    count(*)::integer                     as rides      -- FR4: and the total ride count
   from public.rides r;
 
 create view public.my_credits_by_country with (security_invoker = true) as
@@ -29,8 +29,8 @@ create view public.my_credits_by_country with (security_invoker = true) as
 
 create view public.my_credits_by_manufacturer with (security_invoker = true) as
   select
-    -- coalesce, e nao filtro: coaster de fabricante desconhecido continua contando,
-    -- senao a soma dos agrupamentos deixa de bater com o total.
+    -- coalesce, not a filter: a coaster with an unknown manufacturer still counts,
+    -- otherwise the sum of the groupings stops matching the total.
     coalesce(m.name, 'Unknown') as manufacturer,
     count(distinct r.coaster_id)::integer as credits
   from public.rides r
@@ -59,12 +59,12 @@ create view public.my_most_ridden with (security_invoker = true) as
   join public.coasters c on c.id = r.coaster_id
   join public.parks    p on p.id = c.park_id
   group by c.id, c.name, p.name
-  -- empate resolvido pela ride mais recente, para o numero nao dancar entre cargas
+  -- ties resolved by the most recent ride, so the number does not dance between loads
   order by rides desc, last_ridden desc
   limit 1;
 
--- Numa view invoker, o chamador tambem precisa de permissao nas tabelas de baixo.
--- `authenticated` tem. `anon` nao recebe nada aqui: painel e' area logada.
+-- In an invoker view, the caller also needs permission on the underlying tables.
+-- `authenticated` has it. `anon` receives nothing here: the dashboard is a logged-in area.
 grant select on
   public.my_totals,
   public.my_credits_by_country,

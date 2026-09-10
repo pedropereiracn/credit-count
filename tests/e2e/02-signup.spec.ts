@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { disposableUser, deleteDisposableUser } from './support/users'
 import { creditNumber, pathnameOf, signUpViaUI } from './support/ui'
 
-/** Task 2: "Cadastro cria conta, cai no dashboard, começa com 0 créditos." */
+/** Task 2: "Sign-up creates an account, lands on the dashboard, starts with 0 credits." */
 test.describe('sign up', () => {
   test('creates an account, lands on /dashboard, and starts at 0 credits', async ({ page }) => {
     const user = disposableUser('signup')
