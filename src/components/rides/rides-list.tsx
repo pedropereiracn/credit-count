@@ -43,7 +43,7 @@ export function RidesList({
           <h2 className="mb-1.5 text-xs font-bold tracking-wide text-muted-foreground uppercase">
             {groupDateLabel(group.date)} · {plural(group.rides.length, 'ride')}
           </h2>
-          <ol className="divide-y divide-dashed divide-border rounded-2xl border border-border bg-card px-4 sm:px-5">
+          <ol className="divide-y divide-dashed divide-border rounded-2xl border border-border bg-card px-4 py-1 sm:px-6">
             {group.rides.map((ride) => (
               <RideItem
                 key={ride.id}

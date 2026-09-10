@@ -53,3 +53,7 @@ supabase/.branches/
 
 # .env* acima cobre .env.example por acidente, e ele precisa estar no repositorio
 !.env.example
+
+# material interno: revisoes adversariais e log de trabalho ficam locais, fora do repo publico
+docs/reviews/
+docs/WORKING-LOG.md
