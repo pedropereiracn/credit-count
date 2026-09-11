@@ -30,6 +30,7 @@ node scripts/verify-ui.mjs           # real browser at 390px: fonts, headers, ov
 | | |
 |---|---|
 | [docs/TDD.md](docs/TDD.md) | the technical design document, written before the code |
+| [docs/WORKING-LOG.md](docs/WORKING-LOG.md) | how the work was approached with AI: the workflow, the agents, the model choices, and what each review caught |
 | [AGENTS.md](AGENTS.md) | which agent owns which files, and why that prevents collisions |
 | [CLAUDE.md](CLAUDE.md) | the rules no agent may break |
 

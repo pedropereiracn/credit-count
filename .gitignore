@@ -44,16 +44,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# ambiente local, nunca versionado
+# local environment, never versioned
 .env*.local
 .db-credentials
 .vercel
 supabase/.temp/
 supabase/.branches/
 
-# .env* acima cobre .env.example por acidente, e ele precisa estar no repositorio
+# the .env* rule above would catch .env.example by accident, and it must stay in the repo
 !.env.example
 
-# material interno: revisoes adversariais e log de trabalho ficam locais, fora do repo publico
+# internal adversarial reviews stay local, out of the public repo
 docs/reviews/
-docs/WORKING-LOG.md
