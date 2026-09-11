@@ -98,8 +98,7 @@ not done.
 `src/app/(auth)/actions.ts`, `src/app/auth/callback/route.ts`,
 `src/components/auth/**`
 
-**Reads:** `src/lib/supabase/**`, `src/proxy.ts`, `src/components/ui/**`,
-`prototipo/index.html` (`#/login` and `#/signup`)
+**Reads:** `src/lib/supabase/**`, `src/proxy.ts`, `src/components/ui/**`
 
 **Covers:** SOW §4.1.1, FR1 (the sign-up page a visitor may reach)
 
@@ -131,7 +130,7 @@ literal, and the gate attacks exactly that field.
 
 **Owns:** `src/app/page.tsx`, `src/components/leaderboard/**`
 
-**Reads:** `src/lib/supabase/**`, `src/components/ui/**`, `prototipo/index.html` (`#/`)
+**Reads:** `src/lib/supabase/**`, `src/components/ui/**`
 
 **Covers:** FR1, FR7, AC3, SOW §4.1.7
 
@@ -146,12 +145,19 @@ literal, and the gate attacks exactly that field.
    land on the next request, and page caching is what actually breaks that.
 6. Header shows Log in and Sign up when signed out.
 
-**Done when:** the page renders signed out, and the network tab shows exactly one call,
-to the RPC, carrying three fields per row.
+**Done when:** the page renders signed out, and the network tab shows the one call to the
+RPC, carrying three fields per row. Signed in, the viewer's own profile and credit total
+are read too (both scoped to the caller by RLS) so their row can be tinted, which makes a
+signed-in load a few reads plus the RPC, not a single call.
 
-**Never:** add "your row is highlighted". The return type cannot identify anyone, display
-names may repeat, and the gate asserts the row shape is exactly those three keys. This was
-removed from the TDD on purpose.
+**Shipped, not forbidden:** the own-row highlight. It is in the delivered TDD (`docs/TDD.md`
+§2 and §4) and implemented in `src/app/page.tsx` and
+`src/components/leaderboard/leaderboard-list.tsx`. The RPC's return type still carries only
+`rank`, `display_name` and `credits`; the tint is decided server-side by matching a row
+against the viewer's own display name and credit count, read separately from the RPC and
+scoped to the caller by RLS. It is an approximation: two opted-in users who share both a
+display name and a credit count would both light up. The exact fix, a function returning
+the caller's position from `auth.uid()`, is left as a v2 move.
 
 ### A3. Demo data
 
@@ -194,8 +200,7 @@ environment, like everything else.
 
 **Owns:** `src/app/dashboard/**`, `src/components/dashboard/**`
 
-**Reads:** `src/lib/**`, `src/components/ui/**`, `prototipo/index.html` (`#/dashboard`,
-`#/dashboard-vazio`)
+**Reads:** `src/lib/**`, `src/components/ui/**`
 
 **Covers:** FR2, FR3, FR4, FR5, SOW §4.1.4, §4.1.5
 

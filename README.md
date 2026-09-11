@@ -30,10 +30,8 @@ node scripts/verify-ui.mjs           # real browser at 390px: fonts, headers, ov
 | | |
 |---|---|
 | [docs/TDD.md](docs/TDD.md) | the technical design document, written before the code |
-| [docs/WORKING-LOG.md](docs/WORKING-LOG.md) | how the work was directed and reviewed, mistakes included |
 | [AGENTS.md](AGENTS.md) | which agent owns which files, and why that prevents collisions |
 | [CLAUDE.md](CLAUDE.md) | the rules no agent may break |
-| [docs/reviews/](docs/reviews/) | the adversarial reviews, and what they found |
 
 ## Running it
 
@@ -66,7 +64,7 @@ node scripts/seed-demo.mjs                         # demo accounts, so the board
 | RLS, grants, policies | `supabase/migrations/*_security.sql` |
 | The three elevated functions | `supabase/migrations/*_functions.sql` |
 | The five statistic views | `supabase/migrations/*_views.sql` |
-| 46 real coasters | `supabase/migrations/*_seed.sql` |
+| 52 real coasters, 12 parks, 14 manufacturers, 3 countries | `supabase/migrations/*_seed.sql` |
 
 ## Stack
 

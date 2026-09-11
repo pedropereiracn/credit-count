@@ -37,7 +37,12 @@ function tierOf(rank: number): keyof typeof TIER_STYLES {
   return 'rest'
 }
 
-/** Renders rank, display name and credits. Nothing else: see AGENTS.md, A2, "Never". */
+/**
+ * Renders rank, display name and credits from the RPC, plus the viewer's own-row
+ * highlight: matched here by display name + credits, never by a column the RPC
+ * returns. A v2 fix would key the match on auth.uid() instead. See the block comment
+ * above and docs/TDD.md section 4.
+ */
 export function LeaderboardList({
   rows,
   you,

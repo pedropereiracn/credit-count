@@ -54,7 +54,7 @@ grant execute on function public.merge_coasters(uuid, uuid) to authenticated;
 do $$
 declare erro text;
 begin
-  select string_agg(format('%s tem %s em %s', grantee, privilege_type, table_name), '; ')
+  select string_agg(format('%s has %s on %s', grantee, privilege_type, table_name), '; ')
     into erro
   from information_schema.role_table_grants
   where table_schema = 'public' and table_name like 'my\_%'
@@ -69,7 +69,7 @@ begin
       and (has_function_privilege('anon', p.oid, 'execute')
         or has_function_privilege('authenticated', p.oid, 'execute'))
   ) then
-    raise exception 'handle_new_user continua chamavel por cliente';
+    raise exception 'handle_new_user is still callable by a client';
   end if;
 
   raise notice 'grants verified: views SELECT-only, handle_new_user closed';
