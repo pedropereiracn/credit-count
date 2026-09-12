@@ -27,7 +27,7 @@ read the brief  →  analyse what the test measures  →  visual prototype  → 
                  (no application code until the TDD survived being attacked)
 ```
 
-Nothing was built until the SOW had been read line by line and the TDD had survived being
+Nothing was built until the SOW had been read closely and the TDD had survived being
 attacked. That order is not ceremony: the SOW says four times that privacy must hold against
 direct API calls, and an access model is far cheaper to get right on paper than in a schema
 other code already depends on.
@@ -195,10 +195,10 @@ Worth listing, because they are the proof the review process does something.
 ## 9. Corrections that came from me, not the model
 
 - **A sentence in the TDD was untrue.** It read "I reviewed every grant, policy and elevated
-  function line by line." I had not, and I said so. The replacement splits the code in two: the
-  security surface, roughly 166 lines of SQL, is read line by line; everything else is held to
-  the gate, "since the gate runs on every push and attention does not." A smaller claim, and a
-  verifiable one. That reading is a commitment, and it happens before submission.
+  function line by line." I had not, and I said so. The replacement makes a smaller, honest claim:
+  the security surface is deliberately small and is the part I read myself, and everything else is
+  held to the gate, "since the gate runs on every push and attention does not." A claim now enters
+  the document only with something behind it.
 - **A route was missing.** FR1 says a visitor may reach the leaderboard and a sign-up page. The
   prose mentioned it; the route table did not list `/login` or `/signup`, and the route table is
   where an approver checks. Two review passes had missed it.

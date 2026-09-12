@@ -95,7 +95,7 @@ AC2 and AC4 describe an attack, so the delivery includes it. `scripts/verify-sec
 
 Every destructive attempt is followed by A re-reading the row, since PostgREST answers 204 to a DELETE matching nothing. Steps 3, 5, 6, 7 and 9 are positive controls: a gate proving only failures would pass with the API off. It exits non-zero and runs before push, carrying the §2 invariant per account. A SQL audit adds what no client sees: RLS everywhere, no elevated function outside the inventory, no view missing `security_invoker`, no function executable by `anon` beyond the leaderboard, and it deletes the accounts the gate leaves behind (deleting a user needs the secret key, which the gate is not allowed to hold, so the SQL audit does it).
 
-**Directing the AI.** Claude Code wrote the screens, the seed, this script and the first draft of this document. I read the security surface myself, line by line: the grants, the policies and the three elevated functions, because there a plausible generated line is a breach rather than a bug. The rest of the code I hold to the gate instead of to my own attention, since the gate runs on every push and attention does not.
+**Directing the AI.** Claude Code wrote the screens, the seed, this script and the first draft of this document. The security surface, the grants, the policies and the three elevated functions, is deliberately kept small, because there a plausible generated line is a breach rather than a bug. That is the part I read myself; the rest of the code is held to the gate rather than to my own attention, since the gate runs on every push and attention does not.
 
 ## 7. Decisions, risks and limits (AC6, SOW §7)
 
